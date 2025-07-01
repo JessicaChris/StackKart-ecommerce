@@ -4,7 +4,7 @@ This project was developed as part of my internship experience.
 It uses modern frontend tools to build a fully functional web application with real-time database support.
 
 ## Tech Stack
-- ⚛ React JS
+-  React JS
 -  TypeScript
 -  Supabase (Auth + Database)
 -  CSS Modules / Tailwind (if used)
