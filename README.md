@@ -17,6 +17,13 @@ It uses modern frontend tools to build a fully functional web application with r
 - Handling authentication and protected routes
 - Working in a real dev environment (version control, deployment prep, etc.)
 
+## What's New?
+-  Login system with hashed passwords
+-  Role-based navigation (admin / user)
+-  Analytics Dashboard with Recharts
+-  Auto logout after 10 mins of inactivity
+-  Forgot Password page
+
 ##  How to Run Locally
 
 Clone the repo:
