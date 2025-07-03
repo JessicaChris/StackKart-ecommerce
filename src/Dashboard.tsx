@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import SessionCheck from './SessionCheck';
+import { toast } from 'react-toastify'; // ✅ ADD THIS
 
 const Dashboard: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editUser, setEditUser] = useState<any | null>(null); // for popup
+  const [editUser, setEditUser] = useState<any | null>(null);
   const [form, setForm] = useState({ name: '', username: '', email: '' });
 
   useEffect(() => {
+    // ✅ Show only on first mount
+    toast.success('Login Successful ✅');
     fetchUsers();
   }, []);
 
@@ -28,19 +31,15 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const confirm = window.confirm("Are you sure you want to delete this user?");
-    if (!confirm) return;
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
 
-    const { error } = await supabase
-      .from('login-page')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('login-page').delete().eq('id', id);
 
     if (error) {
       console.error('Error deleting user:', error.message);
-      alert("Failed to delete user.");
+      toast.error('Failed to delete user ❌');
     } else {
-      alert("User deleted!");
+      toast.success('User deleted 🗑️');
       fetchUsers();
     }
   };
@@ -63,10 +62,9 @@ const Dashboard: React.FC = () => {
       .eq('id', editUser.id);
 
     if (error) {
-      console.error('Error updating user:', error.message);
-      alert('Update failed!');
+      toast.error('Update failed ❌');
     } else {
-      alert('User updated successfully!');
+      toast.success('User updated ✅');
       setEditUser(null);
       fetchUsers();
     }

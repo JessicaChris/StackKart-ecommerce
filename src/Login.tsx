@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import bcrypt from 'bcryptjs';
 
 const Login: React.FC = () => {
@@ -10,7 +12,7 @@ const Login: React.FC = () => {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      alert('Please fill in both fields 😅');
+      toast.warn('Please fill in both fields 😅');
       return;
     }
 
@@ -21,29 +23,26 @@ const Login: React.FC = () => {
       .single();
 
     if (error || !data) {
-      alert('User not found 😥');
+      toast.error('User not found 😥');
       return;
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, data.password);
 
     if (!isPasswordCorrect) {
-      alert('Wrong password ❌');
+      toast.error('Wrong password ❌');
       return;
     }
 
     if (!data.approved) {
-      alert("You're not approved yet. Please wait for admin approval ⏳");
+      toast.info("You're not approved yet. Please wait for admin approval ⏳");
       return;
     }
 
     const now = new Date();
-
-    // ✅ FIXED: Clean the role from weird quotes or spaces
     const role = (data.role || '').replace(/['"]/g, '').trim().toLowerCase();
-    console.log("✅ Final role being saved:", role);
+    console.log('✅ Final role being saved:', role);
 
-    // ✅ Store user info in localStorage
     localStorage.setItem(
       'loggedInUser',
       JSON.stringify({
@@ -54,18 +53,15 @@ const Login: React.FC = () => {
       })
     );
 
-    // ✅ Update Supabase last login
     await supabase
       .from('login-page')
       .update({ last_login: now.toISOString() })
       .eq('username', username);
 
-    // ✅ Just send everyone to /home
-    alert(`Welcome back, ${data.name} 😎`);
+    toast.success(`Welcome back, ${data.name} 😎`);
     navigate('/home');
   };
 
-  // 🎨 Styling
   const styles = {
     page: {
       backgroundImage: 'url("/download (6).jpg")',
@@ -124,14 +120,7 @@ const Login: React.FC = () => {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h2
-          style={{
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-            color: '#fff',
-            fontFamily: 'Poppins',
-          }}
-        >
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#fff', fontFamily: 'Poppins' }}>
           Login Page 🔐
         </h2>
 
@@ -154,6 +143,20 @@ const Login: React.FC = () => {
         <button onClick={handleLogin} style={styles.button}>
           ✨ Login ✨
         </button>
+
+        <p
+  style={{
+    textAlign: 'center',
+    marginTop: '1rem',
+    fontFamily: 'Poppins',
+    color: 'white',
+  }}
+>
+  <a href="/forgot-password" style={{ color: '#00bfff' }}>
+    Forgot Password?
+  </a>
+</p>
+
 
         <p
           style={{

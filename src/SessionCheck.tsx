@@ -21,9 +21,11 @@ const SessionCheck: React.FC<SessionCheckProps> = ({ children }) => {
     const user = JSON.parse(loggedInUser);
     const loginTime = new Date(user.loginTime);
     const now = new Date();
-    const diffInDays = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60 * 24);
+    
+    // ⏳ Calculate time difference in minutes
+    const diffInMinutes = (now.getTime() - loginTime.getTime()) / (1000 * 60);
 
-    if (diffInDays > 10) {
+    if (diffInMinutes > 10) {
       alert('Session expired 😴 Please log in again!');
       localStorage.removeItem('loggedInUser');
       navigate('/');

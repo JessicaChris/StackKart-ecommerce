@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -15,12 +17,12 @@ const Register: React.FC = () => {
 
   const handleRegister = async () => {
     if (!name || !email || !username || !password || !confirmPassword) {
-      alert("Please fill in all fields 😅");
+      toast.warn("Please fill in all fields 😅");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match 💀");
+      toast.error("Passwords do not match 💀");
       return;
     }
 
@@ -32,19 +34,20 @@ const Register: React.FC = () => {
 
     if (error) {
       console.error('Supabase error:', error.message);
-      alert("Error registering user ❌");
+      toast.error("Error registering user ❌");
     } else {
-      alert(`Welcome, ${name}! You're registered ✅`);
+      toast.success(`Welcome, ${name}! You're registered ✅`);
 
       if (formRef.current) {
-        formRef.current.submit(); // send formsubmit email
+        formRef.current.submit(); // Send formsubmit email
       }
 
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     }
   };
 
-  // ✨ Styling — same as Login page
   const pageStyle: React.CSSProperties = {
     backgroundImage: 'url("/download (6).jpg")',
     backgroundSize: 'cover',
@@ -75,16 +78,15 @@ const Register: React.FC = () => {
   };
 
   const inputStyle = {
-  width: '100%',
-  padding: '0.7rem',
-  marginBottom: '1rem',
-  borderRadius: '10px',
-  border: '1px solid #000',
-  fontSize: '1rem',
-  backgroundColor: '#222', // dark background
-  color: 'white', // text in white
-};
-
+    width: '100%',
+    padding: '0.7rem',
+    marginBottom: '1rem',
+    borderRadius: '10px',
+    border: '1px solid #000',
+    fontSize: '1rem',
+    backgroundColor: '#222',
+    color: 'white',
+  };
 
   const buttonWrapperStyle: React.CSSProperties = {
     position: 'relative',
@@ -156,7 +158,7 @@ const Register: React.FC = () => {
           <div style={shineOverlayStyle}></div>
         </div>
 
-        {/* 📨 FormSubmit for email alert */}
+        {/* 📨 Hidden formsubmit */}
         <form
           ref={formRef}
           action="https://formsubmit.co/jessica3chris@gmail.com"

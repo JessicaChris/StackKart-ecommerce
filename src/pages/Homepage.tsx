@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,18 +13,25 @@ const Home: React.FC = () => {
   }, [navigate]);
 
   const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
-  console.log("🤖 User object:", user);
-console.log("🔐 Cleaned role:", user?.role?.toLowerCase().trim());
+  const role = user?.role?.toLowerCase().trim();
 
-
-  const goToDashboard = () => {
-    navigate('/dashboard');
-  };
-
+  const goToDashboard = () => navigate('/dashboard');
   const handleLogout = () => {
     localStorage.removeItem('loggedInUser');
     alert('Logged out! 👋');
     navigate('/');
+  };
+
+  const buttonBase: React.CSSProperties = {
+    padding: '0.9rem 2rem',
+    color: '#fff',
+    fontWeight: 'bold',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    width: '100%',
+    transition: 'all 0.3s ease-in-out',
   };
 
   return (
@@ -56,75 +62,65 @@ console.log("🔐 Cleaned role:", user?.role?.toLowerCase().trim());
           🎀 Welcome Home, {user?.name}!
         </h1>
         <p style={{ fontSize: '1.1rem', marginBottom: '2rem' }}>
-          You’re logged in as <strong>{user?.role}</strong> — time to SLAY 🔥✨
+          You’re logged in as <strong>{role}</strong> 
         </p>
 
-        <button
-          onClick={goToDashboard}
-          style={{
-            padding: '0.9rem 2rem',
-            backgroundColor: '#ff69b4',
-            color: '#fff',
-            fontWeight: 'bold',
-            border: 'none',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            marginBottom: '1rem',
-          }}
-        >
-          ➡ Go to Dashboard
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Dashboard Button */}
+          <button
+            onClick={goToDashboard}
+            style={{
+              ...buttonBase,
+              backgroundColor: '#ff69b4',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#ff85c1')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ff69b4')}
+          >
+            ➡ Go to Dashboard
+          </button>
 
-        {/* 🌟 Admin Approvals Button */}
-        {user?.role?.toLowerCase().trim() === 'admin' && (
-  <button
-    onClick={() => navigate('/admin')}
-    style={{
-      padding: '0.9rem 2rem',
-      backgroundColor: '#6a1b9a',
-      color: '#fff',
-      fontWeight: 'bold',
-      border: 'none',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      fontSize: '1rem',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-      transition: 'all 0.3s ease-in-out',
-      marginBottom: '1rem',
-    }}
-    onMouseEnter={(e) => {
-      const target = e.target as HTMLButtonElement;
-      target.style.backgroundColor = '#8e24aa';
-      target.style.transform = 'scale(1.05)';
-    }}
-    onMouseLeave={(e) => {
-      const target = e.target as HTMLButtonElement;
-      target.style.backgroundColor = '#6a1b9a';
-      target.style.transform = 'scale(1)';
-    }}
-  >
-    🛡️ Admin Approvals
-  </button>
-)}
+          {/* Admin-Only Buttons */}
+          {role === 'admin' && (
+            <>
+              <button
+                onClick={() => navigate('/admin')}
+                style={{
+                  ...buttonBase,
+                  backgroundColor: '#6a1b9a',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#8e24aa')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#6a1b9a')}
+              >
+                🛡️ Admin Approvals
+              </button>
 
-        <br />
+              <button
+                onClick={() => navigate('/analytics')}
+                style={{
+                  ...buttonBase,
+                  backgroundColor: '#008080',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#00b3b3')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#008080')}
+              >
+                📈 Analytics Dashboard
+              </button>
+            </>
+          )}
 
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '0.8rem 2rem',
-            backgroundColor: '#333',
-            color: '#fff',
-            fontWeight: 'bold',
-            border: 'none',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontSize: '1rem',
-          }}
-        >
-          🚪 Logout
-        </button>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            style={{
+              ...buttonBase,
+              backgroundColor: '#333',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#555')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#333')}
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
     </div>
   );
