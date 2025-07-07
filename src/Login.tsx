@@ -43,9 +43,11 @@ const Login: React.FC = () => {
     const role = (data.role || '').replace(/['"]/g, '').trim().toLowerCase();
     console.log('✅ Final role being saved:', role);
 
+    // ✅ Save ID also
     localStorage.setItem(
       'loggedInUser',
       JSON.stringify({
+        id: data.id, // <-- THIS is the fix
         username: data.username,
         name: data.name,
         role: role,
@@ -145,18 +147,17 @@ const Login: React.FC = () => {
         </button>
 
         <p
-  style={{
-    textAlign: 'center',
-    marginTop: '1rem',
-    fontFamily: 'Poppins',
-    color: 'white',
-  }}
->
-  <a href="/forgot-password" style={{ color: '#00bfff' }}>
-    Forgot Password?
-  </a>
-</p>
-
+          style={{
+            textAlign: 'center',
+            marginTop: '1rem',
+            fontFamily: 'Poppins',
+            color: 'white',
+          }}
+        >
+          <a href="/forgot-password" style={{ color: '#00bfff' }}>
+            Forgot Password?
+          </a>
+        </p>
 
         <p
           style={{
