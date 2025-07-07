@@ -1,4 +1,4 @@
-# Internship Project: React + TypeScript + Supabase 
+# Internship Project: Authentication System
 
 This project was developed as part of my internship experience.  
 It uses modern frontend tools to build a fully functional web application with real-time database support.
