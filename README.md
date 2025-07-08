@@ -1,35 +1,24 @@
-# Internship Project: Authentication System
+# StackKart 🛍️
 
-This project was developed as part of my internship experience.  
-It uses modern frontend tools to build a fully functional web application with real-time database support.
+A full-stack e-commerce web app built with React + TypeScript + Supabase.  
+Includes authentication, user dashboard, admin approvals, product management, and more!
 
 ## Tech Stack
--  React JS
--  TypeScript
--  Supabase (Auth + Database)
--  CSS Modules / Tailwind (if used)
--  Vite or CRA (depending on what you used)
+- React + TypeScript
+- Supabase (Database + Auth)
+- bcrypt.js (Password Hashing)
+- React Router
+- Toastify for alerts
+- Poppins for font styling ✨
 
-##  What I Learned
-- Setting up and managing Supabase backend
-- Building scalable React components
-- Using TypeScript for type safety and clean code
-- Handling authentication and protected routes
-- Working in a real dev environment (version control, deployment prep, etc.)
+## Features
+- 🔐 Secure Login + Register System
+- 👤 User Dashboard + Profile
+- 🛒 Add to Cart System (WIP)
+- 🛠️ Admin Panel for approvals
+- 📊 (Optional) Analytics for sales/users
 
-## What's New?
--  Login system with hashed passwords
--  Role-based navigation (admin / user)
--  Analytics Dashboard with Recharts
--  Auto logout after 10 mins of inactivity
--  Forgot Password page
-
-##  How to Run Locally
-
-Clone the repo:
-
+## Setup Instructions
 ```bash
-git clone https://github.com/JessicaChris/react-typescript-supabase.git
-cd react-typescript-supabase
 npm install
 npm start
