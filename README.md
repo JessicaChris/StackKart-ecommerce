@@ -1,4 +1,4 @@
-# StackKart 🛍
+# StackKart 
 
 A full-stack e-commerce web app built with React + TypeScript + Supabase.  
 Includes authentication, user dashboard, admin approvals, product management, and more!
