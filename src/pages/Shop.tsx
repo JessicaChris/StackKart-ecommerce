@@ -11,21 +11,21 @@ type Product = {
 const sampleProducts: Product[] = [
   {
     id: 1,
-    name: 'TypeScript T-Shirt 👕',
+    name: 'T-Shirt 👕',
     price: 799,
-    image: '/products/tshirt.png',
+    image: '/products/shirt.jpg', // stored in public/products
   },
   {
     id: 2,
-    name: 'React Mug ☕',
+    name: 'Mug ☕',
     price: 499,
-    image: '/products/mug.png',
+    image: '/products/mug.jpg',
   },
   {
     id: 3,
-    name: 'Dev Hoodie 🧥',
+    name: 'Hoodie 🧥',
     price: 1099,
-    image: '/products/hoodie.png',
+    image: '/products/hoodie.jpg',
   },
 ];
 
@@ -34,11 +34,11 @@ const Shop: React.FC = () => {
   const [cart, setCart] = useState<Product[]>([]);
 
   const addToCart = (product: Product) => {
-    const existing = cart.find((item) => item.id === product.id);
-    if (existing) {
+    const exists = cart.find((item) => item.id === product.id);
+    if (exists) {
       alert(`${product.name} is already in your cart 😅`);
     } else {
-      setCart([...cart, { ...product }]);
+      setCart([...cart, product]);
       alert(`${product.name} added to cart ✅`);
     }
   };
@@ -97,7 +97,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '240px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
     textAlign: 'center',
-    transition: 'transform 0.3s',
+    transition: 'transform 0.3s ease-in-out',
   },
   image: {
     width: '100%',
@@ -125,7 +125,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 'bold',
   },
   cartBtn: {
-    marginTop: '2rem',
     backgroundColor: '#333',
     color: '#fff',
     padding: '0.75rem 2rem',
