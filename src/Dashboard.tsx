@@ -1,203 +1,119 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from './supabaseClient';
 import SessionCheck from './SessionCheck';
 import { toast } from 'react-toastify';
 
 const Dashboard: React.FC = () => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editUser, setEditUser] = useState<any | null>(null);
-  const [form, setForm] = useState({ name: '', username: '', email: '' });
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('loggedInUser');
     if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setCurrentUser(user);
-      setIsAdmin(user.role === 'admin');
-      toast.success('Login successful ✅');
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      toast.success(`Welcome back, ${userData.name} 👋`);
     }
   }, []);
 
-  useEffect(() => {
-    if (currentUser) fetchUsers();
-  }, [currentUser]);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-
-    if (!currentUser) return;
-
-    let query = supabase.from('login-page').select('id, name, username, email');
-
-    if (isAdmin) {
-      query = query.eq('approved', true);
-    } else {
-      query = query.eq('id', currentUser.id);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      toast.error('Error fetching data ❌');
-    } else {
-      setUsers(data || []);
-    }
-
-    setLoading(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    const { error } = await supabase.from('login-page').delete().eq('id', id);
-    if (error) {
-      toast.error('Delete failed ❌');
-    } else {
-      toast.success('User deleted 🗑️');
-      fetchUsers();
-    }
-  };
-
-  const openEditModal = (user: any) => {
-    setEditUser(user);
-    setForm({ name: user.name, username: user.username, email: user.email });
-  };
-
-  const handleEditSubmit = async () => {
-    if (!editUser) return;
-    const { error } = await supabase
-      .from('login-page')
-      .update({ name: form.name, username: form.username, email: form.email })
-      .eq('id', editUser.id);
-
-    if (error) {
-      toast.error('Update failed ❌');
-    } else {
-      toast.success('User updated ✅');
-      setEditUser(null);
-      fetchUsers();
-    }
-  };
+  if (!user) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading... ⏳</p>;
 
   return (
     <SessionCheck>
-      <div style={{ padding: '2rem', fontFamily: 'Poppins, sans-serif', minHeight: '100vh', background: '#f3f3f3' }}>
-        <h1 style={{ textAlign: 'center', fontSize: '2rem', color: '#6a1b9a' }}>
-          {isAdmin ? '👥 Approved Users' : '👤 Your Profile'}
-        </h1>
+      <div style={pageStyle}>
+        <div style={cardStyle}>
+          <h2 style={heading}>👤 Hello, {user.name}</h2>
+          <p style={subheading}>Welcome to your StackKart™ profile dashboard</p>
 
-        {loading ? (
-          <p>Loading users... ⏳</p>
-        ) : (
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                {isAdmin && (
-                  <>
-                    <th>Edit</th>
-                    <th>Delete</th>
-                  </>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>@{user.username}</td>
-                  <td>{user.email}</td>
-                  {isAdmin && (
-                    <>
-                      <td>
-                        <button style={editButtonStyle} onClick={() => openEditModal(user)}>✏️</button>
-                      </td>
-                      <td>
-                        <button style={deleteButtonStyle} onClick={() => handleDelete(user.id)}>❌</button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {editUser && (
-          <div style={modalOverlay}>
-            <div style={modalStyle}>
-              <h2>Edit User</h2>
-              <label>Name:</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <label>Username:</label>
-              <input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
-              <label>Email:</label>
-              <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button onClick={handleEditSubmit} style={editButtonStyle}>✅ Update</button>
-                <button onClick={() => setEditUser(null)} style={deleteButtonStyle}>❌ Cancel</button>
-              </div>
-            </div>
+          <div style={infoBlock}>
+            <div style={row}><strong>Name:</strong> <span>{user.name}</span></div>
+            <div style={row}><strong>Username:</strong> <span>@{user.username}</span></div>
+            <div style={row}><strong>Email:</strong> <span>{user.email}</span></div>
+            <div style={row}><strong>Role:</strong> <span>{user.role}</span></div>
+            <div style={row}><strong>Last Login:</strong> <span>{new Date(user.loginTime).toLocaleString()}</span></div>
           </div>
-        )}
+
+          <div style={buttonWrap}>
+            <button style={buttonStyle} onClick={() => toast.info('Feature coming soon')}>✏️ Edit Profile</button>
+            <button
+              style={{ ...buttonStyle, backgroundColor: '#333' }}
+              onClick={() => {
+                localStorage.removeItem('loggedInUser');
+                toast.info('Logged out!');
+                window.location.href = '/';
+              }}
+            >
+              🚪 Logout
+            </button>
+          </div>
+        </div>
       </div>
     </SessionCheck>
   );
 };
 
-const tableStyle: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  backgroundColor: '#fff',
-  borderRadius: '12px',
-  overflow: 'hidden',
-  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-  marginTop: '2rem',
-};
+export default Dashboard;
 
-const editButtonStyle: React.CSSProperties = {
-  backgroundColor: '#6a1b9a',
-  color: '#fff',
-  border: 'none',
-  padding: '0.4rem 0.6rem',
-  borderRadius: '6px',
-  cursor: 'pointer',
-};
+// 🔧 Styles
 
-const deleteButtonStyle: React.CSSProperties = {
-  backgroundColor: '#e53935',
-  color: '#fff',
-  border: 'none',
-  padding: '0.4rem 0.6rem',
-  borderRadius: '6px',
-  cursor: 'pointer',
-};
-
-const modalOverlay: React.CSSProperties = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(0,0,0,0.5)',
+const pageStyle: React.CSSProperties = {
+  backgroundColor: '#f5f5f5',
+  minHeight: '100vh',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  zIndex: 1000,
+  padding: '2rem',
+  fontFamily: 'Poppins, sans-serif',
 };
 
-const modalStyle: React.CSSProperties = {
+const cardStyle: React.CSSProperties = {
   backgroundColor: '#fff',
+  borderRadius: '16px',
   padding: '2rem',
-  borderRadius: '12px',
-  width: '350px',
+  boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+  width: '100%',
+  maxWidth: '450px',
+};
+
+const heading: React.CSSProperties = {
+  fontSize: '1.8rem',
+  color: '#6a1b9a',
+  marginBottom: '0.3rem',
+};
+
+const subheading: React.CSSProperties = {
+  color: '#777',
+  fontSize: '1rem',
+  marginBottom: '1.5rem',
+};
+
+const infoBlock: React.CSSProperties = {
+  backgroundColor: '#f9f9f9',
+  padding: '1rem',
+  borderRadius: '10px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+};
+
+const row: React.CSSProperties = {
+  marginBottom: '1rem',
+  fontSize: '1rem',
+  color: '#333',
+  display: 'flex',
+  justifyContent: 'space-between',
+};
+
+const buttonWrap: React.CSSProperties = {
+  marginTop: '2rem',
   display: 'flex',
   flexDirection: 'column',
-  gap: '0.8rem',
+  gap: '1rem',
 };
 
-export default Dashboard;
+const buttonStyle: React.CSSProperties = {
+  padding: '0.75rem',
+  border: 'none',
+  borderRadius: '10px',
+  backgroundColor: '#6a1b9a',
+  color: '#fff',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  fontSize: '1rem',
+};

@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
 import Home from './pages/Homepage';
+import Shop from './pages/Shop';
+import Cart from './pages/Cart';
 import AdminDashboard from './pages/adminDashboard';
 import Profile from './pages/Profile';
 import AdminApprovals from './pages/AdminApprovals';
@@ -34,6 +36,8 @@ root.render(
         <Route path="/home" element={<SessionCheck><Home /></SessionCheck>} />
         <Route path="/profile" element={<SessionCheck><Profile /></SessionCheck>} />
         <Route path="/admin" element={<SessionCheck><AdminDashboard /></SessionCheck>} />
+        <Route path="/shop" element={<SessionCheck><Shop /></SessionCheck>} />
+         <Route path="/cart" element={<SessionCheck><Cart /></SessionCheck>} />
         <Route path="/approvals" element={<SessionCheck><AdminApprovals /></SessionCheck>} />
         <Route path="/analytics" element={<AnalyticsDashboard />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
