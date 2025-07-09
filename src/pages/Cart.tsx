@@ -1,72 +1,66 @@
-// src/pages/Cart.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type CartItem = {
   id: number;
   name: string;
   price: number;
+  image: string;
   quantity: number;
 };
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Sample cart data (later this should come from context or global state like Redux or Zustand)
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { id: 1, name: 'StackKart Hoodie 🧥', price: 999, quantity: 1 },
-    { id: 2, name: 'TypeScript Notebook 📓', price: 299, quantity: 2 },
-  ]);
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    setCartItems(cart);
+  }, []);
 
   const handleQuantityChange = (id: number, delta: number) => {
-    const updated = cartItems.map((item) =>
-      item.id === id
-        ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-        : item
+    const updated = cartItems.map(item =>
+      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
     );
     setCartItems(updated);
+    localStorage.setItem('cart', JSON.stringify(updated));
   };
 
   const handleRemove = (id: number) => {
-    const updated = cartItems.filter((item) => item.id !== id);
+    const updated = cartItems.filter(item => item.id !== id);
     setCartItems(updated);
+    localStorage.setItem('cart', JSON.stringify(updated));
   };
 
-  const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <div style={styles.page}>
       <h1 style={styles.heading}>🛒 Your Cart</h1>
-
       {cartItems.length === 0 ? (
-        <p style={styles.emptyText}>Your cart is empty 😢</p>
+        <p style={styles.empty}>Your cart is empty 😢</p>
       ) : (
         <div style={styles.cartBox}>
-          {cartItems.map((item) => (
-            <div key={item.id} style={styles.itemCard}>
-              <h3>{item.name}</h3>
-              <p>₹{item.price} x {item.quantity}</p>
-              <div style={styles.qtyControls}>
-                <button onClick={() => handleQuantityChange(item.id, -1)}>-</button>
-                <span style={{ margin: '0 1rem' }}>{item.quantity}</span>
-                <button onClick={() => handleQuantityChange(item.id, 1)}>+</button>
+          {cartItems.map(item => (
+            <div key={item.id} style={styles.item}>
+              <img src={item.image} alt={item.name} style={styles.image} />
+              <div style={{ flex: 1 }}>
+                <h3>{item.name}</h3>
+                <p>₹{item.price} x {item.quantity}</p>
+                <div style={styles.controls}>
+                  <button onClick={() => handleQuantityChange(item.id, -1)}>-</button>
+                  <span style={{ margin: '0 1rem' }}>{item.quantity}</span>
+                  <button onClick={() => handleQuantityChange(item.id, 1)}>+</button>
+                </div>
+                <button onClick={() => handleRemove(item.id)} style={styles.removeBtn}>❌ Remove</button>
               </div>
-              <button style={styles.removeBtn} onClick={() => handleRemove(item.id)}>❌ Remove</button>
             </div>
           ))}
-
-          <h2 style={styles.total}>Total: ₹{totalPrice}</h2>
-
-          <button style={styles.checkoutBtn} onClick={() => alert('Checkout soon 😌💳')}>
-            Proceed to Checkout
-          </button>
+          <h2 style={styles.total}>Total: ₹{total}</h2>
+          <button style={styles.checkout}>Proceed to Checkout</button>
         </div>
       )}
-
-      <button onClick={() => navigate('/home')} style={styles.homeBtn}>🏠 Back to Homepage</button>
+      <button onClick={() => navigate('/shop')} style={styles.backBtn}>🛍️ Back to Shop</button>
     </div>
   );
 };
@@ -77,7 +71,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   page: {
     padding: '2rem',
     fontFamily: 'Poppins',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f0f0f0',
     minHeight: '100vh',
   },
   heading: {
@@ -86,64 +80,71 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#6a1b9a',
     marginBottom: '2rem',
   },
-  emptyText: {
+  empty: {
     textAlign: 'center',
-    color: '#888',
     fontSize: '1.2rem',
+    color: '#888',
   },
   cartBox: {
     maxWidth: '600px',
     margin: '0 auto',
     backgroundColor: '#fff',
-    padding: '2rem',
-    borderRadius: '16px',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
+    borderRadius: '12px',
+    padding: '1.5rem',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
   },
-  itemCard: {
+  item: {
+    display: 'flex',
+    gap: '1rem',
     marginBottom: '1.5rem',
     borderBottom: '1px solid #eee',
     paddingBottom: '1rem',
   },
-  qtyControls: {
+  image: {
+    width: '80px',
+    height: '80px',
+    objectFit: 'cover',
+  },
+  controls: {
     display: 'flex',
     alignItems: 'center',
     marginTop: '0.5rem',
   },
   removeBtn: {
+    marginTop: '0.5rem',
     backgroundColor: '#e53935',
-    color: 'white',
+    color: '#fff',
     border: 'none',
     padding: '0.4rem 0.8rem',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    marginTop: '0.5rem',
   },
   total: {
     textAlign: 'right',
-    marginTop: '2rem',
-    fontSize: '1.3rem',
+    fontSize: '1.2rem',
     fontWeight: 'bold',
-  },
-  checkoutBtn: {
     marginTop: '1rem',
+  },
+  checkout: {
     width: '100%',
-    padding: '1rem',
-    borderRadius: '10px',
     backgroundColor: '#6a1b9a',
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: '1rem',
+    padding: '0.8rem',
     border: 'none',
+    borderRadius: '8px',
+    fontWeight: 'bold',
+    marginTop: '1rem',
     cursor: 'pointer',
   },
-  homeBtn: {
+  backBtn: {
     display: 'block',
     margin: '2rem auto 0',
-    padding: '0.6rem 1.4rem',
+    padding: '0.6rem 1.2rem',
     backgroundColor: '#333',
     color: '#fff',
-    borderRadius: '10px',
     border: 'none',
+    borderRadius: '10px',
+    fontWeight: 'bold',
     cursor: 'pointer',
   },
 };
