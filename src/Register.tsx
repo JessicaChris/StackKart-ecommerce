@@ -49,7 +49,7 @@ const Register: React.FC = () => {
   };
 
   const pageStyle: React.CSSProperties = {
-    backgroundImage: 'url("/download (6).jpg")',
+    backgroundImage: 'url("/register-bg.jpg")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     minHeight: '100vh',

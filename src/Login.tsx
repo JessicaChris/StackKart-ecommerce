@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import bcrypt from 'bcryptjs';
 
@@ -22,12 +22,15 @@ const Login: React.FC = () => {
       .eq('username', username)
       .single();
 
+    console.log("Fetched user:", data);
+
     if (error || !data) {
       toast.error('User not found 😥');
       return;
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, data.password);
+    console.log("Password correct:", isPasswordCorrect);
 
     if (!isPasswordCorrect) {
       toast.error('Wrong password ❌');
@@ -35,19 +38,18 @@ const Login: React.FC = () => {
     }
 
     if (!data.approved) {
+      console.log("Approved status:", data.approved);
       toast.info("You're not approved yet. Please wait for admin approval ⏳");
       return;
     }
 
     const now = new Date();
     const role = (data.role || '').replace(/['"]/g, '').trim().toLowerCase();
-    console.log('✅ Final role being saved:', role);
 
-    // ✅ Save ID also
     localStorage.setItem(
       'loggedInUser',
       JSON.stringify({
-        id: data.id, // <-- THIS is the fix
+        id: data.id,
         username: data.username,
         name: data.name,
         role: role,
@@ -60,13 +62,17 @@ const Login: React.FC = () => {
       .update({ last_login: now.toISOString() })
       .eq('username', username);
 
-    toast.success(`Welcome back, ${data.name} 😎`);
-    navigate('/home');
+    navigate('/home', {
+      state: {
+        toastMessage: `Welcome back, ${data.name} 😎`
+      }
+    });
   };
 
   const styles = {
     page: {
-      backgroundImage: 'url("/download (6).jpg")',
+      backgroundImage: 'url("/login-bg.jpg")',
+      backgroundColor: '#111',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       minHeight: '100vh',
@@ -76,8 +82,9 @@ const Login: React.FC = () => {
     } as React.CSSProperties,
 
     card: {
-      background: 'rgba(34, 33, 33, 0.85)',
-      backdropFilter: 'blur(12px)',
+      backgroundColor: 'rgba(25, 25, 25, 0.7)',
+      backdropFilter: 'blur(14px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
       borderRadius: '20px',
       padding: '2rem',
       width: '90%',
@@ -100,8 +107,8 @@ const Login: React.FC = () => {
       padding: '0.7rem',
       marginBottom: '1rem',
       borderRadius: '10px',
-      border: '1px solid #fff',
-      backgroundColor: 'transparent',
+      border: '1px solid #ccc',
+      backgroundColor: '#222',
       color: 'white',
       fontSize: '1rem',
     } as React.CSSProperties,
@@ -109,7 +116,7 @@ const Login: React.FC = () => {
     button: {
       width: '100%',
       padding: '0.9rem',
-      backgroundColor: '#000',
+      backgroundColor: '#6a1b9a',
       color: 'white',
       border: 'none',
       borderRadius: '12px',
@@ -117,12 +124,19 @@ const Login: React.FC = () => {
       cursor: 'pointer',
       fontSize: '1rem',
     } as React.CSSProperties,
+
+    linkText: {
+      textAlign: 'center',
+      marginTop: '1rem',
+      fontFamily: 'Poppins',
+      color: '#ccc',
+    } as React.CSSProperties,
   };
 
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#fff', fontFamily: 'Poppins' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontFamily: 'Poppins' }}>
           Login Page 🔐
         </h2>
 
@@ -146,33 +160,31 @@ const Login: React.FC = () => {
           ✨ Login ✨
         </button>
 
-        <p
-          style={{
-            textAlign: 'center',
-            marginTop: '1rem',
-            fontFamily: 'Poppins',
-            color: 'white',
-          }}
-        >
-          <a href="/forgot-password" style={{ color: '#00bfff' }}>
+        <p style={styles.linkText}>
+          <a href="/forgot-password" style={{ color: '#6a1b9a' }}>
             Forgot Password?
           </a>
         </p>
 
-        <p
-          style={{
-            textAlign: 'center',
-            marginTop: '1rem',
-            fontFamily: 'Poppins',
-            color: 'white',
-          }}
-        >
+        <p style={styles.linkText}>
           Don't have an account?{' '}
           <a href="/register" style={{ color: '#007BFF' }}>
             Sign up
           </a>
         </p>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 };

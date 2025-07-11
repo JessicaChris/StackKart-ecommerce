@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { toast } from 'react-toastify';
 
 type CartItem = {
   id: number;
@@ -32,6 +34,47 @@ const Cart: React.FC = () => {
     localStorage.setItem('cart', JSON.stringify(updated));
   };
 
+  const handleCheckout = async () => {
+    try {
+      for (const item of cartItems) {
+        const { data: product, error: fetchError } = await supabase
+          .from('products')
+          .select('stock')
+          .eq('name', item.name)
+          .single();
+
+        if (fetchError || !product) {
+          console.error(`Error fetching ${item.name}:`, fetchError);
+          toast.error(`Failed to process ${item.name}`);
+          continue;
+        }
+
+        const newStock = product.stock - item.quantity;
+        if (newStock < 0) {
+          toast.warn(`Not enough stock for ${item.name}`);
+          continue;
+        }
+
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ stock: newStock })
+          .eq('name', item.name);
+
+        if (updateError) {
+          console.error(`Error updating ${item.name}:`, updateError);
+          toast.error(`Error updating stock for ${item.name}`);
+        }
+      }
+
+      toast.success('Checkout complete! Thank you for shopping 🛍️');
+      localStorage.removeItem('cart');
+      setCartItems([]);
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error('Something went wrong during checkout');
+    }
+  };
+
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -57,7 +100,7 @@ const Cart: React.FC = () => {
             </div>
           ))}
           <h2 style={styles.total}>Total: ₹{total}</h2>
-          <button style={styles.checkout}>Proceed to Checkout</button>
+          <button style={styles.checkout} onClick={handleCheckout}>Proceed to Checkout</button>
         </div>
       )}
       <button onClick={() => navigate('/shop')} style={styles.backBtn}>🛍️ Back to Shop</button>
@@ -67,6 +110,7 @@ const Cart: React.FC = () => {
 
 export default Cart;
 
+// 🔥 styles
 const styles: { [key: string]: React.CSSProperties } = {
   page: {
     padding: '2rem',

@@ -43,7 +43,7 @@ const ForgotPassword: React.FC = () => {
   return (
     <div
       style={{
-        backgroundImage: 'url("/download (6).jpg")',
+        backgroundImage: 'url("/register-jpg.jpg")',
         backgroundSize: 'cover',
         minHeight: '100vh',
         display: 'flex',

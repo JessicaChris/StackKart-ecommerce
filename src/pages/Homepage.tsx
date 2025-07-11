@@ -1,8 +1,11 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const storedUser = localStorage.getItem('loggedInUser');
 
   useEffect(() => {
@@ -10,7 +13,12 @@ const Home: React.FC = () => {
       alert('Please log in first 😅');
       navigate('/');
     }
-  }, [navigate]);
+
+    const toastMessage = location.state?.toastMessage;
+    if (toastMessage) {
+      toast.success(toastMessage);
+    }
+  }, [navigate, storedUser, location.state]);
 
   const user = JSON.parse(storedUser || 'null');
   const role = user?.role?.toLowerCase().trim();
@@ -21,8 +29,34 @@ const Home: React.FC = () => {
     navigate('/');
   };
 
+  const handleCategoryClick = (category: string) => {
+    navigate(`/category/${category.toLowerCase()}`);
+  };
+
+  const categories = [
+    { name: 'Fashion', icon: '👗' },
+    { name: 'Electronics', icon: '💻' },
+    { name: 'Books', icon: '📚' },
+    { name: 'Food', icon: '🍔' },
+    { name: 'Gaming', icon: '🎮' },
+    { name: 'Home Decor', icon: '🏠' },
+  ];
+
   return (
     <div style={containerStyle}>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+
+      {/* HEADER */}
       <header style={headerStyle}>
         <h2 style={logoStyle}>🛒 StackKart</h2>
         <nav style={navStyle}>
@@ -30,29 +64,43 @@ const Home: React.FC = () => {
           <button style={navBtnStyle} onClick={() => navigate('/cart')}>Cart</button>
           <button style={navBtnStyle} onClick={() => navigate('/dashboard')}>Profile</button>
           {role === 'admin' && (
-            <button style={navBtnStyle} onClick={() => navigate('/admin')}>Admin</button>
+            <>
+              <button style={navBtnStyle} onClick={() => navigate('/admin')}>Admin</button>
+              <button style={navBtnStyle} onClick={() => navigate('/inventory')}>Inventory</button>
+              <button style={navBtnStyle} onClick={() => navigate('/inventorydashboard')}>Analytics</button>
+            </>
           )}
           <button style={logoutBtnStyle} onClick={handleLogout}>Logout 🚪</button>
         </nav>
       </header>
 
+      {/* HERO SECTION */}
       <section style={bannerStyle}>
         <h1 style={headingStyle}>Hey {user?.name}, welcome to StackKart™</h1>
         <p style={subTextStyle}>Your one-stop shop for everything cool ✨</p>
         <button style={shopBtnStyle} onClick={() => navigate('/shop')}>Start Shopping ⬅</button>
       </section>
 
+      {/* CATEGORY CARDS */}
       <section style={categoriesStyle}>
         <h2 style={sectionTitleStyle}>Explore Categories</h2>
         <div style={gridStyle}>
-          <div style={cardStyle}>👗 Fashion</div>
-          <div style={cardStyle}>💻 Electronics</div>
-          <div style={cardStyle}>📚 Books</div>
-          <div style={cardStyle}>🍔 Food</div>
-          <div style={cardStyle}>🎮 Gaming</div>
-          <div style={cardStyle}>🏠 Home Decor</div>
+          {categories.map((cat) => (
+            <div
+              key={cat.name}
+              style={cardStyle}
+              onClick={() => handleCategoryClick(cat.name)}
+            >
+              {cat.icon} {cat.name}
+            </div>
+          ))}
         </div>
       </section>
+
+      {/* FOOTER */}
+      <footer style={footerStyle}>
+        © {new Date().getFullYear()} StackKart™ — Built with 💜 by Jess
+      </footer>
     </div>
   );
 };
@@ -63,6 +111,9 @@ const containerStyle: React.CSSProperties = {
   fontFamily: 'Poppins, sans-serif',
   backgroundColor: '#f3f3f3',
   minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
 };
 
 const headerStyle: React.CSSProperties = {
@@ -85,6 +136,7 @@ const logoStyle: React.CSSProperties = {
 const navStyle: React.CSSProperties = {
   display: 'flex',
   gap: '1rem',
+  flexWrap: 'wrap',
 };
 
 const navBtnStyle: React.CSSProperties = {
@@ -117,14 +169,12 @@ const headingStyle: React.CSSProperties = {
   fontSize: '2rem',
   color: '#333',
   marginBottom: '0.5rem',
-  textAlign: 'center',
 };
 
 const subTextStyle: React.CSSProperties = {
   fontSize: '1rem',
   color: '#555',
   marginBottom: '1.5rem',
-  textAlign: 'center',
 };
 
 const shopBtnStyle: React.CSSProperties = {
@@ -168,4 +218,14 @@ const cardStyle: React.CSSProperties = {
   width: '100%',
   transition: 'transform 0.3s ease',
   cursor: 'pointer',
+  userSelect: 'none',
+};
+
+const footerStyle: React.CSSProperties = {
+  backgroundColor: '#6a1b9a',
+  color: '#fff',
+  textAlign: 'center',
+  padding: '1rem',
+  fontSize: '0.9rem',
+  marginTop: '2rem',
 };
