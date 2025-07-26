@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bcrypt from 'bcryptjs';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 
 const ForgotPassword: React.FC = () => {
   const [username, setUsername] = useState('');

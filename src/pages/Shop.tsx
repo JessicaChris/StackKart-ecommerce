@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type Product = {
@@ -10,29 +10,31 @@ type Product = {
 
 type CartItem = Product & { quantity: number };
 
-const sampleProducts: Product[] = [
-  {
-    id: 1,
-    name: 'TypeScript T-Shirt 👕',
-    price: 799,
-    image: '/products/shirt.jpg', // place this image inside /public/products/
-  },
-  {
-    id: 2,
-    name: 'React Mug ☕',
-    price: 499,
-    image: '/products/mug.jpg',
-  },
-  {
-    id: 3,
-    name: 'Dev Hoodie 🧥',
-    price: 1099,
-    image: '/products/hoodie.jpg',
-  },
-];
-
 const Shop: React.FC = () => {
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('http://localhost:5069/api/products');
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message || 'Unknown error');
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const addToCart = (product: Product) => {
     const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -46,24 +48,65 @@ const Shop: React.FC = () => {
     }
 
     localStorage.setItem('cart', JSON.stringify(updatedCart));
-    alert(`${product.name} added to cart ✅`);
+    setMessage(`${product.name} added to cart ✅`);
+
+    // Clear message after 2 sec
+    setTimeout(() => setMessage(null), 2000);
   };
 
   return (
     <div style={styles.page}>
       <h1 style={styles.heading}>🛍️ Shop at StackKart</h1>
-      <div style={styles.grid}>
-        {sampleProducts.map((product) => (
-          <div key={product.id} style={styles.card}>
-            <img src={product.image} alt={product.name} style={styles.image} />
-            <h3>{product.name}</h3>
-            <p>₹{product.price}</p>
-            <button style={styles.btn} onClick={() => addToCart(product)}>➕ Add to Cart</button>
-          </div>
-        ))}
-      </div>
+
+      {message && (
+        <div style={styles.message}>
+          {message}
+        </div>
+      )}
+
+      {loading && <p style={{ textAlign: 'center' }}>Loading products... ⏳</p>}
+
+      {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+
+      {!loading && !error && (
+        <div style={styles.grid}>
+          {products.map((product) => (
+            <div
+              key={product.id}
+              style={{
+                ...styles.card,
+                ...(hoveredCard === product.id ? styles.cardHover : {}),
+              }}
+              onMouseEnter={() => setHoveredCard(product.id)}
+              onMouseLeave={() => setHoveredCard(null)}
+            >
+              <img
+                src={product.image || '/products/default.jpg'}
+                alt={product.name}
+                style={styles.image}
+              />
+              <h3>{product.name}</h3>
+              <p>₹{product.price}</p>
+              <button
+                style={{
+                  ...styles.btn,
+                  opacity: loading ? 0.5 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                }}
+                onClick={() => addToCart(product)}
+                disabled={loading}
+              >
+                ➕ Add to Cart
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <button style={styles.cartBtn} onClick={() => navigate('/cart')}>🛒 Go to Cart</button>
+        <button style={styles.cartBtn} onClick={() => navigate('/cart')}>
+          🛒 Go to Cart
+        </button>
       </div>
     </div>
   );
@@ -84,6 +127,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#6a1b9a',
     marginBottom: '2rem',
   },
+  message: {
+    textAlign: 'center',
+    color: '#6a1b9a',
+    marginBottom: '1rem',
+    fontWeight: 'bold',
+  },
   grid: {
     display: 'flex',
     gap: '2rem',
@@ -97,6 +146,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '220px',
     textAlign: 'center',
     boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  },
+  cardHover: {
+    transform: 'scale(1.05)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
   },
   image: {
     width: '100%',
@@ -110,7 +164,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '0.5rem 1rem',
     border: 'none',
     borderRadius: '8px',
-    cursor: 'pointer',
     fontWeight: 'bold',
   },
   cartBtn: {

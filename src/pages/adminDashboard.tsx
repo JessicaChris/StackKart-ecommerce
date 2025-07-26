@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient'; // ✅ top-level import only
+import { supabase } from '../utils/supabaseClient'; // ✅ top-level import only
 
 const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);

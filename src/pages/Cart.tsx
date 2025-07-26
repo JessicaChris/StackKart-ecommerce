@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 import { toast } from 'react-toastify';
 
 type CartItem = {

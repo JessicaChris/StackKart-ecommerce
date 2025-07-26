@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 
 const AdminApprovals: React.FC = () => {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
