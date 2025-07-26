@@ -4,30 +4,24 @@ import { supabase } from './utils/supabaseClient';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import bcrypt from 'bcryptjs';
-
-const ALLOWED_DEVICE_ID = '34444335-3534-3834-4D59-593835344435';
+import { v4 as uuidv4 } from 'uuid'; // generate unique IDs
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [deviceId, setDeviceId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Always set localStorage to allowed device ID
-    const deviceId = localStorage.getItem('device_id');
-    if (!deviceId || deviceId.trim() !== ALLOWED_DEVICE_ID.trim()) {
-      localStorage.setItem('device_id', ALLOWED_DEVICE_ID);
+    let id = localStorage.getItem('device_id');
+    if (!id) {
+      id = uuidv4(); // new device, generate unique ID
+      localStorage.setItem('device_id', id);
     }
+    setDeviceId(id);
   }, []);
 
   const handleLogin = async () => {
-    const localDeviceId = localStorage.getItem('device_id');
-
-    if (!localDeviceId || localDeviceId.trim() !== ALLOWED_DEVICE_ID.trim()) {
-      toast.error('🛑 This device is not allowed.');
-      return;
-    }
-
     if (!username || !password) {
       toast.warn('Please fill in both fields 😅');
       return;
@@ -55,12 +49,26 @@ const Login: React.FC = () => {
       return;
     }
 
-    // If user’s device_id doesn't match, update it
-    if ((userData.device_id || '').trim() !== ALLOWED_DEVICE_ID.trim()) {
-      await supabase
+    if (!deviceId) {
+      toast.error('Device ID not found. Something went wrong 🧨');
+      return;
+    }
+
+    if (!userData.device_id) {
+      // first time logging in — lock to current device
+      const { error: updateError } = await supabase
         .from('login-page')
-        .update({ device_id: ALLOWED_DEVICE_ID })
+        .update({ device_id: deviceId })
         .eq('username', username);
+
+      if (updateError) {
+        toast.error('Error setting device ID 😬');
+        return;
+      }
+    } else if (userData.device_id !== deviceId) {
+      // device mismatch
+      toast.error('🚫 Access denied. This account is locked to another device.');
+      return;
     }
 
     const now = new Date();
@@ -87,6 +95,7 @@ const Login: React.FC = () => {
     });
   };
 
+  // your existing styling...
   const styles = {
     page: {
       backgroundImage: 'url("/login-bg.jpg")',
