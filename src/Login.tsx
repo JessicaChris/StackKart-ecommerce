@@ -1,58 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from './supabaseClient';
+import { supabase } from './utils/supabaseClient';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import bcrypt from 'bcryptjs';
+
+const ALLOWED_DEVICE_ID = '34444335-3534-3834-4D59-593835344435';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Always set localStorage to allowed device ID
+    const deviceId = localStorage.getItem('device_id');
+    if (!deviceId || deviceId.trim() !== ALLOWED_DEVICE_ID.trim()) {
+      localStorage.setItem('device_id', ALLOWED_DEVICE_ID);
+    }
+  }, []);
+
   const handleLogin = async () => {
+    const localDeviceId = localStorage.getItem('device_id');
+
+    if (!localDeviceId || localDeviceId.trim() !== ALLOWED_DEVICE_ID.trim()) {
+      toast.error('🛑 This device is not allowed.');
+      return;
+    }
+
     if (!username || !password) {
       toast.warn('Please fill in both fields 😅');
       return;
     }
 
-    const { data, error } = await supabase
+    const { data: userData, error } = await supabase
       .from('login-page')
       .select('*')
       .eq('username', username)
       .single();
 
-    console.log("Fetched user:", data);
-
-    if (error || !data) {
+    if (error || !userData) {
       toast.error('User not found 😥');
       return;
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, data.password);
-    console.log("Password correct:", isPasswordCorrect);
-
+    const isPasswordCorrect = await bcrypt.compare(password, userData.password);
     if (!isPasswordCorrect) {
       toast.error('Wrong password ❌');
       return;
     }
 
-    if (!data.approved) {
-      console.log("Approved status:", data.approved);
+    if (!userData.approved) {
       toast.info("You're not approved yet. Please wait for admin approval ⏳");
       return;
     }
 
+    // If user’s device_id doesn't match, update it
+    if ((userData.device_id || '').trim() !== ALLOWED_DEVICE_ID.trim()) {
+      await supabase
+        .from('login-page')
+        .update({ device_id: ALLOWED_DEVICE_ID })
+        .eq('username', username);
+    }
+
     const now = new Date();
-    const role = (data.role || '').replace(/['"]/g, '').trim().toLowerCase();
+    const role = (userData.role || '').replace(/['"]/g, '').trim().toLowerCase();
 
     localStorage.setItem(
       'loggedInUser',
       JSON.stringify({
-        id: data.id,
-        username: data.username,
-        name: data.name,
-        role: role,
+        id: userData.id,
+        username: userData.username,
+        name: userData.name,
+        role,
         loginTime: now.toISOString(),
       })
     );
@@ -63,9 +83,7 @@ const Login: React.FC = () => {
       .eq('username', username);
 
     navigate('/home', {
-      state: {
-        toastMessage: `Welcome back, ${data.name} 😎`
-      }
+      state: { toastMessage: `Welcome back, ${userData.name} 😎` },
     });
   };
 
@@ -98,7 +116,6 @@ const Login: React.FC = () => {
       fontWeight: 'bold',
       marginBottom: '0.5rem',
       display: 'block',
-      fontFamily: 'Poppins',
       color: 'white',
     } as React.CSSProperties,
 
@@ -128,7 +145,6 @@ const Login: React.FC = () => {
     linkText: {
       textAlign: 'center',
       marginTop: '1rem',
-      fontFamily: 'Poppins',
       color: '#ccc',
     } as React.CSSProperties,
   };
@@ -136,7 +152,7 @@ const Login: React.FC = () => {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontFamily: 'Poppins' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           Login Page 🔐
         </h2>
 
@@ -167,7 +183,7 @@ const Login: React.FC = () => {
         </p>
 
         <p style={styles.linkText}>
-          Don't have an account?{' '}
+          Don’t have an account?{' '}
           <a href="/register" style={{ color: '#007BFF' }}>
             Sign up
           </a>
